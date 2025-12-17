@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 import time
-from utils import load_data, extract_schema
+from utils import load_data, extract_schema, analyze_results
 from models import get_ollama_models, process_with_ollama, process_with_groq, generate_schema_from_sample_ollama, generate_schema_from_sample_groq
 
 st.set_page_config(page_title="Universal Data Converter", layout="wide")
@@ -161,11 +161,39 @@ if input_df is not None and schema_template is not None:
             
             status_text.success("Conversion Complete!")
             
-            # --- Results & Download ---
-            st.subheader("Results")
-            st.json(results)
+            # --- Post-Processing & Results ---
+            st.divider()
+            st.subheader("4. Post-Processing & Results")
             
-            json_string = json.dumps(results, indent=2)
+            valid_results, flagged_results = analyze_results(results)
+            
+            col_res1, col_res2 = st.columns(2)
+            col_res1.metric("Total Processed", len(results))
+            col_res2.metric("Valid Objects", len(valid_results))
+            
+            final_data = results # Default to all
+            
+            if flagged_results:
+                st.warning(f"⚠️ {len(flagged_results)} Possibly Invalid/Empty Objects Detected")
+                
+                with st.expander("View Flagged Items"):
+                    for item in flagged_results:
+                        st.markdown(f"**Row {item['index']}**: {item['reason']}")
+                        st.json(item['data'])
+                
+                exclude_flagged = st.checkbox("Exclude flagged items from final download", value=True)
+                if exclude_flagged:
+                    final_data = valid_results
+                    st.success(f"Filtering applied. Download will contain {len(final_data)} valid objects.")
+                else:
+                    st.info("Including all items (processed and flagged) in download.")
+            else:
+                 st.success("✅ All items processed successfully with no quality issues detected.")
+            
+            st.subheader("Final Output")
+            st.json(final_data)
+            
+            json_string = json.dumps(final_data, indent=2)
             st.download_button(
                 label="Download JSON",
                 data=json_string,

@@ -14,6 +14,8 @@ This tool is flexible, offering both **Local** (Ollama) and **Cloud** (Groq) pro
 *   **Flexible Inputs:** Supports standard `.csv`, `.xlsx`, and `.xls` files.
 *   **Custom Schema Definition:** Define your output JSON structure simply by uploading a reference Excel, CSV, or JSON file with your desired keys.
 *   **Batch Processing:** Automatically processes every row in your input file.
+*   **Auto-Generate Schema:** Let the AI analyze your data and propose a schema for you.
+*   **Post-Processing & Validation:** Automatically detects invalid JSON or objects with high null density, allowing you to filter them out before downloading.
 *   **Automatic JSON Validation:** Ensures the output is valid JSON, handling errors gracefully.
 *   **Downloadable Results:** Export the converted data as a ready-to-use `.json` file.
 
@@ -85,7 +87,12 @@ The application should open automatically in your default web browser (usually a
 2.  **Upload Target Schema (Column 2):**
     *   Click "Browse files" under **2. Upload Target Schema**.
     *   Upload a reference file (Excel, CSV, or JSON) where the **keys/headers** represent the keys you want in your final JSON.
+    *   Upload a reference file (Excel, CSV, or JSON) where the **keys/headers** represent the keys you want in your final JSON.
     *   *Preview:* The extracted keys will be shown.
+3.  **OR Use Auto-Generation:**
+    *   Click **"✨ Auto-Generate Schema from Data"**.
+    *   The AI will analyze the first 4 rows of your Input Data and propose a schema.
+    *   Click **"Use Processed Schema"** to accept it.
 
 ### Section C: Conversion
 1.  Once both files are uploaded, a **"Start Conversion"** button will appear at the bottom.
@@ -95,9 +102,13 @@ The application should open automatically in your default web browser (usually a
     *   For **Groq**, there is a built-in 10-second delay between rows to respect free-tier rate limits.
     *   For **Ollama**, speed depends on your local hardware.
 
-### Section D: Results
-1.  When complete, the JSON output will be displayed on the screen.
-2.  Click the **"Download JSON"** button to save the file to your computer.
+### Section D: Post-Processing & Results
+1.  **Review Results:**
+    *   The application displays a summary of "Total Processed" vs "Valid Objects".
+    *   **Flagged Items:** If any objects are invalid or have high null density (>50%), they are flagged.
+    *   **Filtering:** You can choose to "Exclude flagged items from final download" (checked by default).
+2.  **Download:**
+    *   Click the **"Download JSON"** button to save the final filtered file.
 
 ---
 

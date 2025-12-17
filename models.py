@@ -73,3 +73,58 @@ def process_with_groq(data_row, schema, api_key, model_name="groq/compound-mini"
         return chat_completion.choices[0].message.content.strip()
     except Exception as e:
         return f"Error: {e}"
+
+def generate_schema_prompt(sample_data):
+    return f"""
+    You are a data architect. Analyze the following sample data rows and propose the best JSON schema structure to represent this data.
+    
+    Sample Data:
+    {sample_data}
+    
+    Return a valid JSON object where keys are the field names you propose and values are descriptions of the data type (e.g., "String", "Number", "Date").
+    Example output:
+    {{
+        "customer_name": "String - Full name of customer",
+        "order_amount": "Number - Total value",
+        "date": "String - YYYY-MM-DD"
+    }}
+    
+    Return ONLY the JSON. No keys other than the fields. No markdown formatting.
+    """
+
+def generate_schema_from_sample_ollama(sample_data, model_name="llama2"):
+    prompt = generate_schema_prompt(sample_data)
+    try:
+        payload = {
+            "model": model_name,
+            "prompt": prompt,
+            "stream": False
+        }
+        response = requests.post("http://localhost:11434/api/generate", json=payload)
+        response.raise_for_status()
+        result = response.json()
+        return result.get("response", "").strip()
+    except Exception as e:
+        return f"Error: {e}"
+
+def generate_schema_from_sample_groq(sample_data, api_key, model_name="groq/compound-mini"):
+    prompt = generate_schema_prompt(sample_data)
+    try:
+        client = Groq(api_key=api_key)
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful data architect that outputs only JSON schemas."
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model=model_name,
+            temperature=0, 
+        )
+        return chat_completion.choices[0].message.content.strip()
+    except Exception as e:
+        return f"Error: {e}"

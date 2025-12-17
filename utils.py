@@ -13,14 +13,27 @@ def load_data(uploaded_file):
         return None
 
 def extract_schema(uploaded_file):
-    """Extracts fields from the reference Excel sheet."""
+    """Extracts fields from the reference file (CSV, Excel, or JSON)."""
     try:
         if uploaded_file.name.endswith('.csv'):
              df = pd.read_csv(uploaded_file)
+             fields = list(df.columns)
+        elif uploaded_file.name.endswith('.json'):
+             import json
+             data = json.load(uploaded_file)
+             if isinstance(data, list):
+                 if data:
+                    fields = list(data[0].keys())
+                 else:
+                    fields = []
+             elif isinstance(data, dict):
+                 fields = list(data.keys())
+             else:
+                 fields = []
         else:
              df = pd.read_excel(uploaded_file)
+             fields = list(df.columns)
         
-        fields = list(df.columns)
         schema_template = {field: "Data Type/Description" for field in fields}
         return schema_template
     except Exception as e:

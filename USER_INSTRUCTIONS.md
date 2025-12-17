@@ -12,7 +12,7 @@ This tool is flexible, offering both **Local** (Ollama) and **Cloud** (Groq) pro
     *   **Local (Ollama):** Run entirely on your machine for maximum privacy using models like `llama3`. No data leaves your system.
     *   **Cloud (Groq):** Use Groq's high-speed API for faster processing (requires an API Key).
 *   **Flexible Inputs:** Supports standard `.csv`, `.xlsx`, and `.xls` files.
-*   **Custom Schema Definition:** Define your output JSON structure simply by uploading a reference Excel/CSV file with your desired column headers.
+*   **Custom Schema Definition:** Define your output JSON structure simply by uploading a reference Excel, CSV, or JSON file with your desired keys.
 *   **Batch Processing:** Automatically processes every row in your input file.
 *   **Automatic JSON Validation:** Ensures the output is valid JSON, handling errors gracefully.
 *   **Downloadable Results:** Export the converted data as a ready-to-use `.json` file.
@@ -84,7 +84,7 @@ The application should open automatically in your default web browser (usually a
     *   *Preview:* A table preview of the first few rows will appear.
 2.  **Upload Target Schema (Column 2):**
     *   Click "Browse files" under **2. Upload Target Schema**.
-    *   Upload a reference file (Excel or CSV) where the **column headers** represent the keys you want in your final JSON.
+    *   Upload a reference file (Excel, CSV, or JSON) where the **keys/headers** represent the keys you want in your final JSON.
     *   *Preview:* The extracted keys will be shown.
 
 ### Section C: Conversion

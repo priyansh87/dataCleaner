@@ -2,7 +2,7 @@ import streamlit as st
 import json
 import time
 from utils import load_data, extract_schema
-from models import get_ollama_models, process_with_ollama, process_with_groq
+from models import get_ollama_models, process_with_ollama, process_with_groq, generate_schema_from_sample_ollama, generate_schema_from_sample_groq
 
 st.set_page_config(page_title="Universal Data Converter", layout="wide")
 
@@ -49,12 +49,65 @@ with col1:
 
 with col2:
     st.subheader("2. Upload Target Schema")
-    schema_file = st.file_uploader("Upload Structure Reference (Excel)", type=['xlsx', 'xls', 'csv'], key="schema_file")
+    schema_file = st.file_uploader("Upload Structure Reference (Excel/CSV/JSON)", type=['xlsx', 'xls', 'csv', 'json'], key="schema_file")
     if schema_file:
         schema_template = extract_schema(schema_file)
         if schema_template:
             st.json(schema_template, expanded=False)
             st.caption("Extracted Schema Structure")
+    
+    # Auto-Schema Generation Logic
+    else:
+        st.divider()
+        st.write("OR")
+        if st.button("✨ Auto-Generate Schema from Data"):
+            if input_df is not None:
+                # Take first 4 rows
+                sample_data = input_df.head(4).to_dict(orient='records')
+                
+                with st.spinner("Analyzing data to generate schema..."):
+                    generated_schema_str = ""
+                    if model_provider == "Ollama (Local)":
+                        generated_schema_str = generate_schema_from_sample_ollama(sample_data, model_name)
+                    else:
+                        if not api_key:
+                             st.error("Groq API Key required for generation.")
+                        else:
+                             generated_schema_str = generate_schema_from_sample_groq(sample_data, api_key, model_name)
+                    
+                    if generated_schema_str:
+                         # Try to parse
+                         try:
+                             # Clean markdown
+                             if "```json" in generated_schema_str:
+                                 generated_schema_str = generated_schema_str.split("```json")[1].split("```")[0].strip()
+                             elif "```" in generated_schema_str:
+                                 generated_schema_str = generated_schema_str.split("```")[1].split("```")[0].strip()
+                             
+                             st.session_state['generated_schema'] = json.loads(generated_schema_str)
+                             # Reset confirmed schema if new generation happens
+                             if 'confirmed_schema' in st.session_state:
+                                 del st.session_state['confirmed_schema']
+                         except Exception as e:
+                             st.error(f"Failed to parse generated schema: {e}")
+                             st.text(generated_schema_str)
+
+            else:
+                st.warning("Please upload Input Data (Column 1) first.")
+
+    # Display Generated Schema if available
+    if 'generated_schema' in st.session_state:
+        st.success("Schema Generated!")
+        st.json(st.session_state['generated_schema'])
+        
+        if st.button("Use Processed Schema"):
+             st.session_state['confirmed_schema'] = st.session_state['generated_schema']
+             st.rerun()
+
+    if 'confirmed_schema' in st.session_state and not schema_file:
+         schema_template = st.session_state['confirmed_schema']
+         st.info("Using Auto-Generated Schema")
+         st.json(schema_template, expanded=False)
 
 # --- Conversion Logic ---
 if input_df is not None and schema_template is not None:

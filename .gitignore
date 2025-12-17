@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Streamlit
+.streamlit/
+*.pyc
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Test Data (Optional, but good practice to ignore strictly local test files)
+test_input.csv
+test_reference.xlsx
+converted_data.json
